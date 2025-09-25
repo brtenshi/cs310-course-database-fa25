@@ -4,6 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import com.github.cliftonlabs.json_simple.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Comparator;
+import java.util.Collections;
 
 public class SectionDAO {
     
@@ -29,7 +34,26 @@ public class SectionDAO {
             
             if (conn.isValid(0)) {
                 
-                // INSERT YOUR CODE HERE
+                ps = conn.prepareStatement(QUERY_FIND);
+                rs = ps.executeQuery(QUERY_FIND);
+                rsmd = rs.getMetaData();
+                JsonArray jsonResult = new JsonArray();
+                
+                while (rs.next()) {
+                    String currentSubId = rs.getString("subjectid");
+                    String currentNum = rs.getString("num");
+                    if ((subjectid.equals(currentSubId)) && (num.equals(currentNum))){
+                        int numColumns = rsmd.getColumnCount();
+                        JsonObject obj = new JsonObject();
+                        for (int i=1; i<=numColumns; i++) {
+                            String column_name = rsmd.getColumnName(i);
+                            obj.put(column_name, rs.getObject(column_name));
+                        }
+                        jsonResult.add(obj);
+                    }
+                }
+                jsonResult = sortResult(jsonResult); //method implemented below
+                result = Jsoner.serialize(jsonResult);
                 
             }
             
@@ -48,4 +72,29 @@ public class SectionDAO {
         
     }
     
+    
+    //Implementation for sorting based on https://stackoverflow.com/a/12903029 and https://stackoverflow.com/a/19546513
+    public JsonArray sortResult(JsonArray jsonArr) {
+        JsonArray sortedJsonArray = new JsonArray();
+        List jsonValues = new ArrayList<JsonObject>();
+        for (int i = 0; i < jsonArr.size(); i++) {
+            jsonValues.add(jsonArr.get(i));
+        }
+        Collections.sort(jsonValues, new Comparator<JsonObject>() {
+
+            @Override
+            public int compare(JsonObject a, JsonObject b) {
+                String valA = (String) a.get("num");
+                String valB = (String) b.get("num");
+
+                return valA.compareTo(valB);
+
+            }
+        });
+
+        for (int i = 0; i < jsonArr.size(); i++) {
+            sortedJsonArray.add(jsonValues.get(i));
+        }
+        return sortedJsonArray;
+    }
 }
