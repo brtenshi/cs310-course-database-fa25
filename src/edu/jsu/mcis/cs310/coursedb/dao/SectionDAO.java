@@ -74,6 +74,7 @@ public class SectionDAO {
     
     
     //Implementation for sorting based on https://stackoverflow.com/a/12903029 and https://stackoverflow.com/a/19546513
+    //I'm later realizing this is redundant bc the query_find orders it by crn but I don't want to dedlete all of this
     public JsonArray sortResult(JsonArray jsonArr) {
         JsonArray sortedJsonArray = new JsonArray();
         List jsonValues = new ArrayList<JsonObject>();

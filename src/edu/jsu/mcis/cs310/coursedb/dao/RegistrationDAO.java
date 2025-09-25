@@ -1,5 +1,6 @@
 package edu.jsu.mcis.cs310.coursedb.dao;
 
+import com.github.cliftonlabs.json_simple.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,9 +28,11 @@ public class RegistrationDAO {
             
             if (conn.isValid(0)) {
                 
-                // INSERT YOUR CODE HERE
-                
-                
+                String query = "INSERT INTO registration (studentid, termid, crn) VALUES ('" + studentid + "', '" + termid + "', '" + crn + "')";
+                System.out.println("**INSERT QUERY TEST**:" + query);
+                ps = conn.prepareStatement(query);
+                rs = ps.executeQuery(query);
+                result = true;
             }
             
         }
@@ -59,7 +62,10 @@ public class RegistrationDAO {
             
             if (conn.isValid(0)) {
                 
-                // INSERT YOUR CODE HERE
+                String query = "DELETE FROM registration WHERE studentid='" + studentid + "' AND termid='" + termid + "' AND crn='" + crn + "'";
+                System.out.println("**DELETE QUERY TEST**:" + query);
+                ps = conn.prepareStatement(query);
+                result = true;
                 
             }
             
@@ -89,7 +95,10 @@ public class RegistrationDAO {
             
             if (conn.isValid(0)) {
                 
-                // INSERT YOUR CODE HERE
+                String query = "DELETE FROM registration WHERE studentid='" + studentid + "' AND termid='" + termid + "'";
+                System.out.println("**OVERLOAD DELETE QUERY TEST**:" + query);
+                ps = conn.prepareStatement(query);
+                result = true;
                 
             }
             
@@ -121,8 +130,28 @@ public class RegistrationDAO {
             
             if (conn.isValid(0)) {
                 
-                // INSERT YOUR CODE HERE
+                String query = "";
+                ps = conn.prepareStatement(query);
+                rs = ps.executeQuery();
+                rsmd = rs.getMetaData();
+                JsonArray jsonResult = new JsonArray();
                 
+                while (rs.next()) {
+                    int  currentStudID = Integer.parseInt(rs.getString("studentid"));
+                    int currentTermID = Integer.parseInt(rs.getString("termid"));
+                    if ((studentid == currentStudID) && (termid == currentTermID)){
+                        int numColumns = rsmd.getColumnCount();
+                        JsonObject obj = new JsonObject();
+                        for (int i=1; i<=numColumns; i++) {
+                            String column_name = rsmd.getColumnName(i);
+                            obj.put(column_name, rs.getObject(column_name));
+                        }
+                        jsonResult.add(obj);
+                    }
+                }
+                
+                
+                result = Jsoner.serialize(jsonResult);
             }
             
         }

@@ -25,6 +25,7 @@ public final class DAOFactory {
         }
         catch (Exception e) {
             conn = null;
+            System.out.println("conn fail");
             e.printStackTrace();
         }
         
