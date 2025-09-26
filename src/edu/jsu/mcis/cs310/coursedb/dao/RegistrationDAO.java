@@ -28,11 +28,13 @@ public class RegistrationDAO {
             
             if (conn.isValid(0)) {
                 
-                String query = "INSERT INTO registration (studentid, termid, crn) VALUES ('" + studentid + "', '" + termid + "', '" + crn + "')";
-                System.out.println("**INSERT QUERY TEST**:" + query);
+                String query = "INSERT INTO registration (studentid, termid, crn) VALUES (?, ?, ?)";
                 ps = conn.prepareStatement(query);
-                rs = ps.executeQuery(query);
-                result = true;
+                ps.setInt(1, studentid);
+                ps.setInt(2, termid);
+                ps.setInt(3, crn);
+                int rows = ps.executeUpdate();
+                result = (rows > 0);
             }
             
         }
@@ -62,10 +64,13 @@ public class RegistrationDAO {
             
             if (conn.isValid(0)) {
                 
-                String query = "DELETE FROM registration WHERE studentid='" + studentid + "' AND termid='" + termid + "' AND crn='" + crn + "'";
-                System.out.println("**DELETE QUERY TEST**:" + query);
+                String query = "DELETE FROM registration WHERE studentid=? AND termid=? AND crn=?";
                 ps = conn.prepareStatement(query);
-                result = true;
+                ps.setInt(1, studentid);
+                ps.setInt(2, termid);
+                ps.setInt(3, crn);
+                int rows = ps.executeUpdate();
+                result = (rows > 0);
                 
             }
             
@@ -95,10 +100,12 @@ public class RegistrationDAO {
             
             if (conn.isValid(0)) {
                 
-                String query = "DELETE FROM registration WHERE studentid='" + studentid + "' AND termid='" + termid + "'";
-                System.out.println("**OVERLOAD DELETE QUERY TEST**:" + query);
+                String query = "DELETE FROM registration WHERE studentid=? AND termid=?";
                 ps = conn.prepareStatement(query);
-                result = true;
+                ps.setInt(1, studentid);
+                ps.setInt(2, termid);
+                int rows = ps.executeUpdate();
+                result = (rows > 0);
                 
             }
             
@@ -118,7 +125,7 @@ public class RegistrationDAO {
 
     public String list(int studentid, int termid) {
         
-        String result = null;
+        String result = "[]";
         
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -130,24 +137,20 @@ public class RegistrationDAO {
             
             if (conn.isValid(0)) {
                 
-                String query = "";
+                String query = "SELECT * FROM registration WHERE studentid=? AND termid=? ORDER BY crn";
                 ps = conn.prepareStatement(query);
+                ps.setInt(1, studentid);
+                ps.setInt(2, termid);
                 rs = ps.executeQuery();
-                rsmd = rs.getMetaData();
                 JsonArray jsonResult = new JsonArray();
                 
                 while (rs.next()) {
-                    int  currentStudID = Integer.parseInt(rs.getString("studentid"));
-                    int currentTermID = Integer.parseInt(rs.getString("termid"));
-                    if ((studentid == currentStudID) && (termid == currentTermID)){
-                        int numColumns = rsmd.getColumnCount();
-                        JsonObject obj = new JsonObject();
-                        for (int i=1; i<=numColumns; i++) {
-                            String column_name = rsmd.getColumnName(i);
-                            obj.put(column_name, rs.getObject(column_name));
-                        }
-                        jsonResult.add(obj);
-                    }
+                    JsonObject obj = new JsonObject();
+                    obj.put("studentid", rs.getString("studentid"));
+                    obj.put("termid", rs.getString("termid"));
+                    obj.put("crn", rs.getString("crn"));
+                    jsonResult.add(obj);
+                    
                 }
                 
                 
